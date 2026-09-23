@@ -170,6 +170,7 @@ export default function ReportDetailsPage() {
         <div className="mx-auto max-w-3xl">
           <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-700">
             <p className="font-bold">Unable to load this report</p>
+
             <p className="mt-1 text-sm">{error}</p>
           </div>
 
@@ -201,7 +202,12 @@ export default function ReportDetailsPage() {
     Boolean(reportOwnerId) &&
     currentUserId === reportOwnerId;
 
-  const canClaim = Boolean(user) && !isOwner && report.status === "active";
+  // Claims are only available for FOUND reports.
+  const canClaim =
+    Boolean(user) &&
+    !isOwner &&
+    report.status === "active" &&
+    report.type === "found";
 
   const category = categoryLabels[report.category] || report.category;
 
@@ -385,34 +391,41 @@ export default function ReportDetailsPage() {
               </div>
             )}
 
-            {/* Claim */}
+            {/* Claim / Response */}
             <div className="mt-5 border-t border-slate-200 pt-5">
+              {/* Guest CTA */}
               {!user && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center gap-2">
                     <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-lg shadow-sm">
-                      🔐
+                      {report.type === "found" ? "🔐" : "🔎"}
                     </div>
 
                     <h2 className="text-base font-extrabold text-slate-900">
-                      Is this your item?
+                      {report.type === "found"
+                        ? "Is this your item?"
+                        : "Did you find this item?"}
                     </h2>
                   </div>
 
                   <p className="mt-1 text-sm leading-5 text-slate-500">
-                    Log in to submit a claim and explain why you believe this
-                    item belongs to you.
+                    {report.type === "found"
+                      ? "Log in to submit a claim and explain why you believe this item belongs to you."
+                      : "If you've found this item, log in to let the owner know and help return it."}
                   </p>
 
                   <Link
                     to="/login"
                     className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-bold text-white transition hover:bg-slate-800"
                   >
-                    Log in to claim
+                    {report.type === "found"
+                      ? "Log in to claim"
+                      : "Log in to report a find"}
                   </Link>
                 </div>
               )}
 
+              {/* Report owner */}
               {isOwner && (
                 <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                   <div className="flex items-center gap-2">
@@ -426,7 +439,9 @@ export default function ReportDetailsPage() {
                   </div>
 
                   <p className="mt-1 text-sm leading-5 text-blue-700">
-                    Claims from other users will appear in your profile.
+                    {report.type === "found"
+                      ? "Claims from other users will appear in your profile."
+                      : "Responses from people who find your item will appear in your profile."}
                   </p>
 
                   {report.status === "active" && (
@@ -464,6 +479,7 @@ export default function ReportDetailsPage() {
                 </div>
               )}
 
+              {/* Found item claim */}
               {canClaim && (
                 <form onSubmit={handleClaimSubmit}>
                   <div>
@@ -532,6 +548,44 @@ export default function ReportDetailsPage() {
                 </form>
               )}
 
+              {/* Lost item response */}
+              {user &&
+                !isOwner &&
+                report.type === "lost" &&
+                report.status === "active" && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-start gap-2">
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-lg shadow-sm">
+                        🔎
+                      </div>
+
+                      <div>
+                        <h2 className="text-base font-extrabold text-slate-900">
+                          Did you find this item?
+                        </h2>
+
+                        <p className="mt-1 text-sm leading-5 text-slate-500">
+                          If you've found this item, let the owner know and help
+                          return it.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled
+                      className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg bg-slate-300 px-4 text-sm font-bold text-white"
+                    >
+                      I Found This Item
+                    </button>
+
+                    <p className="mt-2 text-xs text-slate-400">
+                      This feature is coming soon.
+                    </p>
+                  </div>
+                )}
+
+              {/* Inactive report */}
               {user && !isOwner && report.status !== "active" && (
                 <div
                   className={`rounded-xl border p-4 ${
