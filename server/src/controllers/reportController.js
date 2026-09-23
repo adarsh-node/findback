@@ -60,6 +60,7 @@ export const createReport = async (req, res) => {
     }
 
     console.log("Files received:", req.files);
+
     const images = [];
 
     if (req.files?.length) {
@@ -119,14 +120,15 @@ export const getReports = async (req, res) => {
       filter.category = category;
     }
 
-   if (search) {
-  const safeSearch = escapeRegex(search);
+    if (search) {
+      const safeSearch = escapeRegex(search);
 
-  filter.$or = [
-    { title: { $regex: safeSearch, $options: "i" } },
-    { description: { $regex: safeSearch, $options: "i" } },
-  ];
-}
+      filter.$or = [
+        { title: { $regex: safeSearch, $options: "i" } },
+        { description: { $regex: safeSearch, $options: "i" } },
+        { category: { $regex: safeSearch, $options: "i" } },
+      ];
+    }
 
     const pageNumber = Math.max(Number(page), 1);
     const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
