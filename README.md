@@ -4,7 +4,7 @@
 
 FindBack is a full-stack Lost & Found web application built to solve a real-world problem: helping people reconnect with belongings they have lost.
 
-Users can browse reports publicly, create Lost or Found reports, upload images, search and filter items, submit claims, receive notifications, and complete a two-sided handover process.
+Users can browse reports publicly, create Lost or Found reports, upload images, search and filter items, submit claims or found-item responses, receive notifications, and complete a two-sided handover process.
 
 ---
 
@@ -17,10 +17,11 @@ Users can browse reports publicly, create Lost or Found reports, upload images, 
 - 🔎 Search and filter reports
 - 📍 Store item locations using GeoJSON
 - ✏️ Edit and delete active reports
-- 🤝 Ownership claim workflow
-- ✅ Claim approval and rejection
+- 🤝 Ownership claim workflow for Found items
+- 🔍 Found-item response workflow for Lost reports
+- ✅ Claim and response approval/rejection
 - 🔄 Two-sided handover confirmation
-- 🔔 Claim and handover notifications
+- 🔔 Claim, response, and handover notifications
 - 👤 User profile and personal reports
 - 📱 Responsive interface
 - ⚖️ Privacy Policy, Terms of Service and Community Guidelines
@@ -44,7 +45,25 @@ Claimant Confirms Receipt
 Returned
 ```
 
-The item is marked as returned only after both sides confirm the handover.
+### Lost Item Response Workflow
+
+```text
+Lost Item
+    ↓
+Finder Responds + Identifying Message
+    ↓
+Report Owner Reviews
+    ↓
+Approve / Reject
+    ↓
+Finder Hands Over Item
+    ↓
+Report Owner Confirms Receipt
+    ↓
+Returned
+```
+
+Items are marked as returned only after the required handover confirmations are completed.
 
 ---
 
@@ -64,7 +83,7 @@ The item is marked as returned only after both sides confirm the handover.
 
 ### Report Details — Found Item & Claim
 
-![Found Report Claim](screenshots/report-details-claim.png)
+![Found Report Details](screenshots/report-details-claim.png)
 
 ### User Profile
 
@@ -120,7 +139,6 @@ findback/
 
 ## Upcoming Features
 
-- 🔍 Lost report response workflow
 - 📍 Advanced location-based search
 - 🤖 Smart item matching
 - 🖼️ AI-powered image matching
@@ -136,9 +154,9 @@ findback/
 
 B.Tech — Information Technology
 
-- GitHub: https://github.com/adarsh-node
-- LinkedIn: https://www.linkedin.com/in/adarsh-techie/
-- Portfolio: https://adarsh-techie.vercel.app/
+- GitHub: [https://github.com/adarsh-node](https://github.com/adarsh-node)
+- LinkedIn: [https://www.linkedin.com/in/adarsh-techie/](https://www.linkedin.com/in/adarsh-techie/)
+- Portfolio: [https://adarsh-techie.vercel.app/](https://adarsh-techie.vercel.app/)
 
 ---
 
@@ -146,4 +164,4 @@ B.Tech — Information Technology
 
 🚧 **FindBack is actively under development.**
 
-More features and improvements are planned as the project evolves.
+The core Lost & Found reporting, claim, response, notification, and handover workflows are implemented. More features and improvements are planned as the project evolves.
