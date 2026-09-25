@@ -19,7 +19,18 @@ function NotificationCard({
             ? "↔"
             : notification.type === "handover_completed"
               ? "✓"
-              : "🔔";
+              : notification.type === "response_received"
+                ? "🔎"
+                : notification.type === "response_approved"
+                  ? "✓"
+                  : notification.type === "response_rejected"
+                    ? "✕"
+                    : notification.type === "response_handover_started"
+                      ? "↔"
+                      : notification.type ===
+                          "response_handover_completed"
+                        ? "✓"
+                        : "🔔";
 
   return (
     <button
@@ -122,27 +133,65 @@ export default function NotificationsPage() {
         );
       }
 
-      // A new claim received needs to go to the
-      // report owner's Claims Received page.
+      /*
+       * Claim workflow
+       */
       if (notification.type === "claim_received") {
         navigate("/profile/claims-received");
         return;
       }
 
-      // Claim approval/rejection and handover notifications
-      // belong to the user's own claims.
       if (
-        notification.type === "claim_approved" ||
-        notification.type === "claim_rejected" ||
-        notification.type === "handover_started" ||
-        notification.type === "handover_completed"
-      ) {
-        navigate("/profile/claims");
+  notification.type === "claim_approved" ||
+  notification.type === "claim_rejected" ||
+  notification.type === "handover_started"
+) {
+  navigate("/profile/claims");
+  return;
+}
+
+if (notification.type === "handover_completed") {
+  navigate("/profile/claims-received");
+  return;
+}
+
+      /*
+       * Lost-report response workflow
+       *
+       * response_received:
+       * The owner of a lost report received a response
+       * from someone who found the item.
+       */
+      if (notification.type === "response_received") {
+        navigate("/profile/responses-received");
         return;
       }
 
-      // Fallback for future notification types that
-      // are associated with a report.
+      /*
+       * These belong to the finder who submitted
+       * the response.
+       */
+      if (
+  notification.type === "response_approved" ||
+  notification.type === "response_rejected"
+) {
+  navigate("/profile/responses");
+  return;
+}
+
+if (notification.type === "response_handover_started") {
+  navigate("/profile/responses-received");
+  return;
+}
+
+if (notification.type === "response_handover_completed") {
+  navigate("/profile/responses");
+  return;
+}
+
+      /*
+       * Fallback for future notification types.
+       */
       if (notification.report?._id) {
         navigate(`/reports/${notification.report._id}`);
       }
@@ -221,7 +270,7 @@ export default function NotificationsPage() {
               </h1>
 
               <p className="mt-1 text-sm text-slate-500">
-                Stay updated on your claims and reports.
+                Stay updated on your claims, responses, and reports.
               </p>
             </div>
 
@@ -262,8 +311,8 @@ export default function NotificationsPage() {
               </p>
 
               <p className="mt-2 text-sm text-slate-500">
-                Notifications about claims and report activity will
-                appear here.
+                Notifications about claims, responses, and report
+                activity will appear here.
               </p>
             </div>
           ) : (

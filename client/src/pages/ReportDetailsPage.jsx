@@ -78,6 +78,11 @@ export default function ReportDetailsPage() {
   const [claimError, setClaimError] = useState("");
   const [claimSuccess, setClaimSuccess] = useState("");
 
+  const [responseMessage, setResponseMessage] = useState("");
+  const [responseLoading, setResponseLoading] = useState(false);
+  const [responseError, setResponseError] = useState("");
+  const [responseSuccess, setResponseSuccess] = useState("");
+
   useEffect(() => {
     async function loadReport() {
       try {
@@ -118,6 +123,30 @@ export default function ReportDetailsPage() {
       setClaimError(requestError.message);
     } finally {
       setClaimLoading(false);
+    }
+  }
+
+  async function handleResponseSubmit(event) {
+    event.preventDefault();
+
+    try {
+      setResponseLoading(true);
+      setResponseError("");
+      setResponseSuccess("");
+
+      const payload = await apiRequest(`/responses/${id}`, {
+        method: "POST",
+        body: JSON.stringify({
+          message: responseMessage,
+        }),
+      });
+
+      setResponseSuccess(payload.message);
+      setResponseMessage("");
+    } catch (requestError) {
+      setResponseError(requestError.message);
+    } finally {
+      setResponseLoading(false);
     }
   }
 
@@ -170,7 +199,6 @@ export default function ReportDetailsPage() {
         <div className="mx-auto max-w-3xl">
           <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-700">
             <p className="font-bold">Unable to load this report</p>
-
             <p className="mt-1 text-sm">{error}</p>
           </div>
 
@@ -202,12 +230,17 @@ export default function ReportDetailsPage() {
     Boolean(reportOwnerId) &&
     currentUserId === reportOwnerId;
 
-  // Claims are only available for FOUND reports.
   const canClaim =
     Boolean(user) &&
     !isOwner &&
     report.status === "active" &&
     report.type === "found";
+
+  const canRespondToLostReport =
+    Boolean(user) &&
+    !isOwner &&
+    report.status === "active" &&
+    report.type === "lost";
 
   const category = categoryLabels[report.category] || report.category;
 
@@ -465,8 +498,8 @@ export default function ReportDetailsPage() {
 
                   {report.status !== "active" && (
                     <p className="mt-3 text-sm font-medium text-blue-700">
-                      This report can no longer be edited or deleted because
-                      its status is {report.status}.
+                      This report can no longer be edited or deleted because its
+                      status is {report.status}.
                     </p>
                   )}
 
@@ -549,41 +582,75 @@ export default function ReportDetailsPage() {
               )}
 
               {/* Lost item response */}
-              {user &&
-                !isOwner &&
-                report.type === "lost" &&
-                report.status === "active" && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-start gap-2">
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-lg shadow-sm">
-                        🔎
-                      </div>
+              {canRespondToLostReport && (
+                <form onSubmit={handleResponseSubmit}>
+                  <div>
+                    <span className="inline-flex min-h-7 items-center rounded-full bg-rose-50 px-3 text-xs font-bold text-rose-700">
+                      Lost item
+                    </span>
 
-                      <div>
-                        <h2 className="text-base font-extrabold text-slate-900">
-                          Did you find this item?
-                        </h2>
+                    <h2 className="mt-3 text-lg font-extrabold text-slate-950">
+                      Did you find this item?
+                    </h2>
 
-                        <p className="mt-1 text-sm leading-5 text-slate-500">
-                          If you've found this item, let the owner know and help
-                          return it.
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled
-                      className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg bg-slate-300 px-4 text-sm font-bold text-white"
-                    >
-                      I Found This Item
-                    </button>
-
-                    <p className="mt-2 text-xs text-slate-400">
-                      This feature is coming soon.
+                    <p className="mt-1 text-sm leading-5 text-slate-500">
+                      Tell the owner where you found it and include details that
+                      can help them verify it is their item.
                     </p>
                   </div>
-                )}
+
+                  <label
+                    htmlFor="response-message"
+                    className="mt-4 block text-sm font-bold text-slate-700"
+                  >
+                    What did you find?
+                  </label>
+
+                  <textarea
+                    id="response-message"
+                    value={responseMessage}
+                    onChange={(event) => setResponseMessage(event.target.value)}
+                    placeholder="Example: I found this wallet near the metro entrance. It has the same blue card holder and initials shown in the description."
+                    minLength={10}
+                    maxLength={1000}
+                    required
+                    rows={4}
+                    className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-5 outline-none transition placeholder:text-slate-400 focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-50"
+                  />
+
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <span className="text-xs text-slate-400">
+                      Minimum 10 characters
+                    </span>
+
+                    <span className="text-xs font-medium text-slate-400">
+                      {responseMessage.length}/1000
+                    </span>
+                  </div>
+
+                  {responseError && (
+                    <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+                      {responseError}
+                    </div>
+                  )}
+
+                  {responseSuccess && (
+                    <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
+                      {responseSuccess}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={responseLoading}
+                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-rose-500 px-5 text-sm font-bold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {responseLoading
+                      ? "Sending response..."
+                      : "I Found This Item"}
+                  </button>
+                </form>
+              )}
 
               {/* Inactive report */}
               {user && !isOwner && report.status !== "active" && (
@@ -608,7 +675,9 @@ export default function ReportDetailsPage() {
                     >
                       {report.status === "returned"
                         ? "This item has been returned"
-                        : "Claims are no longer available"}
+                        : report.type === "found"
+                          ? "Claims are no longer available"
+                          : "Responses are no longer available"}
                     </h2>
                   </div>
 

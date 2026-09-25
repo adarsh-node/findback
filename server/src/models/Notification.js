@@ -17,6 +17,11 @@ const notificationSchema = new mongoose.Schema(
         "claim_rejected",
         "handover_started",
         "handover_completed",
+        "response_received",
+        "response_approved",
+        "response_rejected",
+        "response_handover_started",
+        "response_handover_completed",
       ],
       required: true,
     },
@@ -47,6 +52,12 @@ const notificationSchema = new mongoose.Schema(
       default: null,
     },
 
+    foundResponse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "FoundResponse",
+      default: null,
+    },
+
     isRead: {
       type: Boolean,
       default: false,
@@ -64,6 +75,9 @@ notificationSchema.index({
   createdAt: -1,
 });
 
-const Notification = mongoose.model("Notification", notificationSchema);
+const Notification = mongoose.model(
+  "Notification",
+  notificationSchema,
+);
 
 export default Notification;

@@ -4,12 +4,7 @@ import { Link } from "react-router";
 import { apiRequest } from "../api.js";
 import { useAuth } from "../hooks/useAuth.js";
 
-function ReportCard({
-  report,
-  reportClaims,
-  processingClaim,
-  onClaimStatus,
-}) {
+function ReportCard({ report, reportClaims, processingClaim, onClaimStatus }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -69,14 +64,11 @@ function ReportCard({
             🫴
           </span>
 
-          <h4 className="text-base font-extrabold text-slate-900">
-            Claims
-          </h4>
+          <h4 className="text-base font-extrabold text-slate-900">Claims</h4>
         </div>
 
         <span className="text-sm font-medium text-slate-400">
-          {reportClaims.length}{" "}
-          {reportClaims.length === 1 ? "claim" : "claims"}
+          {reportClaims.length} {reportClaims.length === 1 ? "claim" : "claims"}
         </span>
       </div>
 
@@ -123,60 +115,47 @@ function ReportCard({
                 </span>
               </div>
 
-              {claim.status === "pending" &&
-                report.status === "active" && (
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      disabled={processingClaim === claim._id}
-                      onClick={() =>
-                        onClaimStatus(
-                          claim._id,
-                          "approved",
-                          report._id,
-                        )
-                      }
-                      className="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {processingClaim === claim._id
-                        ? "Processing..."
-                        : "Approve"}
-                    </button>
+              {claim.status === "pending" && report.status === "active" && (
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    disabled={processingClaim === claim._id}
+                    onClick={() =>
+                      onClaimStatus(claim._id, "approved", report._id)
+                    }
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {processingClaim === claim._id
+                      ? "Processing..."
+                      : "Approve"}
+                  </button>
 
-                    <button
-                      type="button"
-                      disabled={processingClaim === claim._id}
-                      onClick={() =>
-                        onClaimStatus(
-                          claim._id,
-                          "rejected",
-                          report._id,
-                        )
-                      }
-                      className="inline-flex min-h-10 items-center justify-center rounded-xl border border-rose-200 bg-white px-4 text-sm font-bold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {processingClaim === claim._id
-                        ? "Processing..."
-                        : "Reject"}
-                    </button>
-                  </div>
-                )}
+                  <button
+                    type="button"
+                    disabled={processingClaim === claim._id}
+                    onClick={() =>
+                      onClaimStatus(claim._id, "rejected", report._id)
+                    }
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border border-rose-200 bg-white px-4 text-sm font-bold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {processingClaim === claim._id ? "Processing..." : "Reject"}
+                  </button>
+                </div>
+              )}
 
-              {claim.status === "approved" &&
-                report.status === "claimed" && (
-                  <div className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium leading-6 text-emerald-700">
-                    This claim has been approved. Go to Claims Received to
-                    complete the physical handover confirmation.
-                  </div>
-                )}
+              {claim.status === "approved" && report.status === "claimed" && (
+                <div className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium leading-6 text-emerald-700">
+                  This claim has been approved. Go to Claims Received to
+                  complete the physical handover confirmation.
+                </div>
+              )}
 
-              {claim.status === "completed" &&
-                report.status === "returned" && (
-                  <div className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-sm font-medium leading-6 text-violet-700">
-                    The claimant confirmed receiving the item. This report
-                    has been returned successfully.
-                  </div>
-                )}
+              {claim.status === "completed" && report.status === "returned" && (
+                <div className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-sm font-medium leading-6 text-violet-700">
+                  The claimant confirmed receiving the item. This report has
+                  been returned successfully.
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -246,9 +225,7 @@ function ClaimCard({ claim }) {
           Your claim
         </p>
 
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          {claim.message}
-        </p>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{claim.message}</p>
       </div>
     </article>
   );
@@ -261,6 +238,8 @@ export default function ProfilePage() {
   const [claims, setClaims] = useState({});
   const [myClaims, setMyClaims] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [responsesReceivedCount, setResponsesReceivedCount] = useState(0);
+  const [myResponsesCount, setMyResponsesCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -283,10 +262,12 @@ export default function ProfilePage() {
         reportsPayload,
         myClaimsPayload,
         notificationPayload,
+        myResponsesPayload,
       ] = await Promise.all([
         apiRequest("/reports/my"),
         apiRequest("/claims/my"),
         apiRequest("/notifications/unread-count"),
+        apiRequest("/responses/my"),
       ]);
 
       const ownedReports = reportsPayload.reports || [];
@@ -294,13 +275,12 @@ export default function ProfilePage() {
       setReports(ownedReports);
       setMyClaims(myClaimsPayload.claims || []);
       setNotificationCount(notificationPayload.count || 0);
+      setMyResponsesCount((myResponsesPayload.responses || []).length);
 
       const claimsEntries = await Promise.all(
         ownedReports.map(async (report) => {
           try {
-            const payload = await apiRequest(
-              `/claims/report/${report._id}`,
-            );
+            const payload = await apiRequest(`/claims/report/${report._id}`);
 
             return [report._id, payload.claims || []];
           } catch {
@@ -310,10 +290,31 @@ export default function ProfilePage() {
       );
 
       setClaims(Object.fromEntries(claimsEntries));
-    } catch (requestError) {
-      setError(
-        requestError.message || "Failed to load your profile data.",
+
+      const lostReports = ownedReports.filter(
+        (report) => report.type === "lost",
       );
+
+      const responsesEntries = await Promise.all(
+        lostReports.map(async (report) => {
+          try {
+            const payload = await apiRequest(`/responses/report/${report._id}`);
+
+            return payload.responses || [];
+          } catch {
+            return [];
+          }
+        }),
+      );
+
+      setResponsesReceivedCount(
+        responsesEntries.reduce(
+          (total, reportResponses) => total + reportResponses.length,
+          0,
+        ),
+      );
+    } catch (requestError) {
+      setError(requestError.message || "Failed to load your profile data.");
     } finally {
       setLoading(false);
     }
@@ -324,13 +325,10 @@ export default function ProfilePage() {
       setProcessingClaim(claimId);
       setError("");
 
-      const payload = await apiRequest(
-        `/claims/${claimId}/status`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ status }),
-        },
-      );
+      const payload = await apiRequest(`/claims/${claimId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
 
       const updatedClaim = payload.claim;
 
@@ -344,16 +342,12 @@ export default function ProfilePage() {
       if (status === "approved") {
         setReports((current) =>
           current.map((report) =>
-            report._id === reportId
-              ? { ...report, status: "claimed" }
-              : report,
+            report._id === reportId ? { ...report, status: "claimed" } : report,
           ),
         );
       }
     } catch (requestError) {
-      setError(
-        requestError.message || "Failed to update the claim.",
-      );
+      setError(requestError.message || "Failed to update the claim.");
     } finally {
       setProcessingClaim(null);
     }
@@ -373,23 +367,16 @@ export default function ProfilePage() {
   );
 
   // Latest 3 on both laptop and mobile.
-  const visibleReports = showAllReports
-    ? reports
-    : reports.slice(0, 3);
+  const visibleReports = showAllReports ? reports : reports.slice(0, 3);
 
-  const visibleClaims = showAllClaims
-    ? myClaims
-    : myClaims.slice(0, 3);
+  const visibleClaims = showAllClaims ? myClaims : myClaims.slice(0, 3);
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
       <div className="mx-auto max-w-5xl">
         {/* Top navigation */}
         <div className="flex items-center justify-between gap-4">
-          <Link
-            to="/"
-            className="flex items-center gap-3"
-          >
+          <Link to="/" className="flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-xl font-black text-white shadow-sm">
               F
             </span>
@@ -481,7 +468,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Stats */}
-          <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
             <Link
               to="/profile/reports"
               className="rounded-xl border border-blue-200 bg-blue-50 p-3 transition hover:border-blue-300 hover:bg-blue-100"
@@ -533,6 +520,31 @@ export default function ProfilePage() {
                 {notificationCount}
               </p>
             </Link>
+            <Link
+              to="/profile/responses-received"
+              className="rounded-xl border border-rose-200 bg-rose-50 p-3 transition hover:border-rose-300 hover:bg-rose-100"
+            >
+              <p className="text-xs font-bold uppercase tracking-wide text-rose-600">
+                Responses Received
+              </p>
+
+              <p className="mt-1 text-xl font-black text-slate-950">
+                {responsesReceivedCount}
+              </p>
+            </Link>
+
+            <Link
+              to="/profile/responses"
+              className="rounded-xl border border-cyan-200 bg-cyan-50 p-3 transition hover:border-cyan-300 hover:bg-cyan-100"
+            >
+              <p className="text-xs font-bold uppercase tracking-wide text-cyan-600">
+                My Responses
+              </p>
+
+              <p className="mt-1 text-xl font-black text-slate-950">
+                {myResponsesCount}
+              </p>
+            </Link>
           </div>
         </section>
 
@@ -556,9 +568,7 @@ export default function ProfilePage() {
 
           {loading ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm text-slate-500">
-                Loading your reports...
-              </p>
+              <p className="text-sm text-slate-500">Loading your reports...</p>
             </div>
           ) : reports.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -596,14 +606,10 @@ export default function ProfilePage() {
                 <div className="mt-6 flex justify-center">
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowAllReports((value) => !value)
-                    }
+                    onClick={() => setShowAllReports((value) => !value)}
                     className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
                   >
-                    {showAllReports
-                      ? "Show less"
-                      : "View all reports →"}
+                    {showAllReports ? "Show less" : "View all reports →"}
                   </button>
                 </div>
               )}
@@ -625,9 +631,7 @@ export default function ProfilePage() {
 
           {loading ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm text-slate-500">
-                Loading your claims...
-              </p>
+              <p className="text-sm text-slate-500">Loading your claims...</p>
             </div>
           ) : myClaims.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -651,10 +655,7 @@ export default function ProfilePage() {
             <>
               <div className="space-y-5">
                 {visibleClaims.map((claim) => (
-                  <ClaimCard
-                    key={claim._id}
-                    claim={claim}
-                  />
+                  <ClaimCard key={claim._id} claim={claim} />
                 ))}
               </div>
 
@@ -663,14 +664,10 @@ export default function ProfilePage() {
                 <div className="mt-6 flex justify-center">
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowAllClaims((value) => !value)
-                    }
+                    onClick={() => setShowAllClaims((value) => !value)}
                     className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
                   >
-                    {showAllClaims
-                      ? "Show less"
-                      : "View all claims →"}
+                    {showAllClaims ? "Show less" : "View all claims →"}
                   </button>
                 </div>
               )}

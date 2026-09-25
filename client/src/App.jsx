@@ -8,11 +8,13 @@ import HomePage from "./pages/HomePage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import CreateReportPage from "./pages/CreateReportPage.jsx";
 import ReportDetailsPage from "./pages/ReportDetailsPage.jsx";
-import PrivacyPage from "./pages/PrivacyPage.jsx"
-import TermsPage from "./pages/TermsPage.jsx"
-import GuidelinesPage from "./pages/GuidelinesPage.jsx"
-import ContactPage from "./pages/ContactPage.jsx"
-import ScrollToTop from "./components/ScrollToTop.jsx"
+import PrivacyPage from "./pages/PrivacyPage.jsx";
+import TermsPage from "./pages/TermsPage.jsx";
+import GuidelinesPage from "./pages/GuidelinesPage.jsx";
+import ContactPage from "./pages/ContactPage.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import ResponsesReceivedPage from "./pages/ResponsesReceivedPage.jsx";
+import MyResponsesPage from "./pages/MyResponsesPage.jsx";
 
 import MyReportsPage from "./pages/MyReportsPage.jsx";
 import ClaimsReceivedPage from "./pages/ClaimsReceivedPage.jsx";
@@ -40,7 +42,15 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/reports" element={<MyReportsPage />} />
-            <Route path="/profile/claims-received" element={<ClaimsReceivedPage />} />
+            <Route
+              path="/profile/claims-received"
+              element={<ClaimsReceivedPage />}
+            />
+            <Route
+              path="/profile/responses-received"
+              element={<ResponsesReceivedPage />}
+            />
+            <Route path="/profile/responses" element={<MyResponsesPage />} />
             <Route path="/profile/claims" element={<MyClaimsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/reports/new" element={<CreateReportPage />} />
